@@ -1,7 +1,45 @@
 #include "INIParser.h"
 
-void ini_parseIni(const char* iniData)
+void ini_parseIniFromFile(const char* filePath, const char* logFilePath, ini_callback callback)
 {
+	FILE* file = NULL;
+	fopen_s(&file, filePath, "rb");
+	if (file)
+	{
+		// Open file for reading
+		size_t fileSize = 0;
+		// Go to the end of the file
+		fseek(file, 0, SEEK_END);
+		fileSize = ftell(file);
+		// Go to the begining of the file 
+		rewind(file);
+
+		char* fileContent = malloc(fileSize + 1);
+		if (fileContent)
+		{
+			if (fread(fileContent, fileSize, 1, file) == 1)
+			{
+				// Read success
+				fileContent[fileSize] = '\0';
+				ini_parseIni(fileContent, logFilePath, callback);
+			}
+			free(fileContent);
+		}
+
+		fclose(file);
+	}
+}
+
+void ini_parseIni(const char* iniData, const char* logFilePath, ini_callback callback)
+{
+	// Open a log file
+	FILE* log = NULL;
+	if (logFilePath)
+	{
+		fopen_s(&log, logFilePath, "wb");
+	}
+
+
 	// Working buffer
 	char buffer[256];
 	*buffer = '\0';
@@ -117,7 +155,28 @@ void ini_parseIni(const char* iniData)
 				state = 0;
 
 				// Report out
-				printf("Propertie: \"%s/%s\": \"%s\"\n", currentSection, currentKey, currentValue);
+				callback(currentSection, currentKey, currentValue);
+				if (log) 
+				{
+					/*
+					* old implementation
+					* char logBuffer[512];
+					* logBuffer = '\0';
+					* strcat_s(logBuffer, 512, "Section \"");
+					* strcat_s(logBuffer, 512, currentSection);
+					* strcat_s(logBuffer, 512, "\" Key \"");
+					* strcat_s(logBuffer, 512, currentKey);
+					* strcat_s(logBuffer, 512, "\" Value \"");
+					* strcat_s(logBuffer, 512, currentValue);
+					* strcat_s(logBuffer, 512, "\"\n");
+					* size_t logLenght = strlen(logBuffer);
+					* fwrite(logBuffer, logLenght, 1, log);
+					*/
+					
+					fprintf_s(log, "Section = \"%s\" Key = \"%s\" Value = \"%s\"\n",
+						currentSection, currentKey, currentValue);
+
+				}
 			}
 			else
 			{
@@ -131,6 +190,11 @@ void ini_parseIni(const char* iniData)
 			break;
 		}
 	}
+
+	if (log)
+	{
+		fclose(log);
+	}
 }
 
 void ini_appendBuffer(char* buffer, char c)
@@ -143,8 +207,11 @@ void ini_appendBuffer(char* buffer, char c)
 	* cursor[1] = '\0';
 	*/
 
-	char str[2] = { c, '\0' };
-	strcat_s(buffer, 256, str);
+	if (!iscntrl(c))
+	{
+		char str[2] = { c, '\0' };
+		strcat_s(buffer, 256, str);
+	}
 }
 
 void ini_stripeBuffer(char* buffer)

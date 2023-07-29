@@ -1,22 +1,28 @@
 #include "INIParser.h"
 
-int main()
+void iniDataReady(const char* section, const char* key, const char* value)
 {
-	const char* iniContent =
-		"; last modified 1 April 2001 by John Doe\n"
-		"[owner]\n"
-		"name = John Doe\n"
-		"organization = Acme Widgets Inc. \n"
-		"\n"
-		"[database]\n"
-		"; use IP address in case network name resolution is not working\n"
-		"server = 192.0.2.62\n"
-		"port = 143\n"
-		"file = \"payroll.dat\"\n";
+	printf_s("[%s] \n%s = %s\n\n", section, key, value);
+}
 
-	printf("=== RAW INI FILE ===\n%s\n", iniContent);
-	printf("=== PARSED DATA ===\n");
-	ini_parseIni(iniContent);
+int main(int argc, char** argv)
+{
+	// Validate argument1 count
+	if (argc < 2 || argc > 3)
+	{
+		printf_s("usage: INIParser [PathToIniFile] <OPTIONAL:PathToLogFile>");
+		return -1;
+	}
+
+	// Check logfile path
+	const char* logfile = NULL;
+	if (argc >= 3)
+	{
+		logfile = argv[2];
+	}
+
+	// Parse the ini file
+	ini_parseIniFromFile(argv[1], logfile, iniDataReady);
 
 
 	// HEX 0 to indicate end of the string
