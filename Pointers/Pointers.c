@@ -36,7 +36,7 @@ int main()
 	accumulate(&data, 20);
 
 	accumulateInt avg = accumulateResult(&data);
-	printf("The average is: %lld", avg);
+	printf("The average is: %lli", avg);
 
 	return 0;
 }
