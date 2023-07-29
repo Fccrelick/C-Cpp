@@ -44,7 +44,7 @@ int scan_int(int32_t* x)
 
 void execute_print(int32_t x, int32_t count)
 {
-	int32_t* y_value = malloc(count * sizeof(int32_t));
+	int32_t* const y_value = malloc(count * sizeof(int32_t));
 
 	if (y_value)
 	{
