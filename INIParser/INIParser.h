@@ -1,4 +1,11 @@
 #pragma once
+/*
+* What pragma once does
+* #ifndef INIPARSER_H
+* #define INIPARSER_H
+*/
+
+
 
 #include <stdio.h>
 #include <stdint.h>

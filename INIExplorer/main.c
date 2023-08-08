@@ -3,6 +3,27 @@
 #include <stdio.h>
 #include <string.h>
 
+#ifdef MY_DEBUG
+#define  MY_NAME "Debug Fernando"
+#define myGreet(name) printf_s("Debug Hello %s!\n", name);
+#define debugOnly(expr) expr
+#else
+#define  MY_NAME "Fernando"
+#define myGreet(name) printf_s("Hello %s!\n", name);
+#define debugOnly(expr)
+#endif
+
+#if defined(INIEXPLORER_DEFAULT_FORMAT1) && !defined(INIEXPLORER_DEFAULT_FORMAT2)
+#define INIEXPLORER_FORMAT_CALLBACK iniDataReady1
+#elif defined(INIEXPLORER_DEFAULT_FORMAT2) && !defined(INIEXPLORER_DEFAULT_FORMAT1)
+#define INIEXPLORER_FORMAT_CALLBACK iniDataReady2
+#else
+#error Please define EXACTLY one default format!
+#endif
+
+
+
+
 void iniDataReady1(const char* section, const char* key, const char* value)
 {
 	printf_s("[%s] \n%s = %s\n\n", section, key, value);
@@ -15,6 +36,10 @@ void iniDataReady2(const char* section, const char* key, const char* value)
 
 int main(int argc, char** argv)
 {
+	const char* name = MY_NAME;
+	myGreet(name);
+	debugOnly(printf_s("Test 1234 Debug\n"));
+	
 	// Validate argument1 count
 	if (argc < 2 || argc > 4)
 	{
@@ -23,10 +48,22 @@ int main(int argc, char** argv)
 	}
 
 	// Check the format
-	ini_callback callback = iniDataReady1;
-	if (argc >= 3 && strcmp(argv[2], "2") == 0)
+	ini_callback callback = INIEXPLORER_FORMAT_CALLBACK;
+	if (argc >= 3)
 	{
-		callback = iniDataReady2;
+		switch (*argv[2])
+		{
+			case '1':
+				callback = iniDataReady1;
+				break;
+			case '2':
+				callback = iniDataReady2;
+				break;
+			default:
+				printf_s("Invalid format!");
+				return -1;
+		}
+		
 	}
 
 	// Check logfile path
