@@ -1,4 +1,5 @@
-#include <INIParser.h>
+//#include <INIParser.h>
+#include <INIx.h>
 
 #include <stdio.h>
 #include <string.h>
@@ -21,15 +22,12 @@
 #error Please define EXACTLY one default format!
 #endif
 
-
-
-
-void iniDataReady1(const char* section, const char* key, const char* value)
+void iniDataReady1(void* userdata, const char* section, const char* key, const char* value)
 {
 	printf_s("[%s] \n%s = %s\n\n", section, key, value);
 }
 
-void iniDataReady2(const char* section, const char* key, const char* value)
+void iniDataReady2(void* userdata, const char* section, const char* key, const char* value)
 {
 	printf_s("%s\\%s is %s\n", section, key, value);
 }
@@ -74,8 +72,20 @@ int main(int argc, char** argv)
 	}
 
 	// Parse the ini file
-	ini_parseIniFromFile(argv[1], logfile, callback);
+	//ini_parseIniFromFile(argv[1], logfile, callback, NULL);
+	inix_data* iniData = inix_new();
+	if (iniData)
+	{
+		inix_parseIniFromFile(iniData, argv[1], logfile);
+		const char* ownerName = inix_get(iniData, "owner", "name");
+		const char* ownerOrga = inix_get(iniData, "owner", "organization");
+		printf_s("this application is operated by %s form %s\n", ownerName, ownerOrga);
+		
+		printf_s("\nClassical SAX Parsing following now...\n");
+		inix_enumerate(iniData, callback, NULL);
 
+		inix_close(iniData);
+	}
 
 	// HEX 0 to indicate end of the string
 	char edit[256];
